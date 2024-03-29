@@ -1,10 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.4.0 <0.9.0;
 
-contract main 
-{
-	constructor() { owner = payable(msg.sender); }
-	address payable owner;
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+contract AR is ERC20
+{	
+	address owner;
+	constructor(uint256 initialSupply) ERC20("Arena", "AR") 
+	{
+		_mint(msg.sender, initialSupply);
+
+		owner = payable(msg.sender);
+
+	}
+
+
 
 	//Modifiers
 
@@ -24,6 +33,7 @@ contract main
 	struct Player
 	{
 		string	userName;
+		uint256 balance;
 	}
 	
 	struct Tournament
@@ -31,6 +41,7 @@ contract main
 		string	name;
 		uint256	price;
 		uint256 startTime;
+		uint256 endTime;
 		address[] regPlayers;
 		uint8 regFee;
 		uint256 creationTime;
@@ -39,7 +50,7 @@ contract main
 	}
 
 	//Mappings
-	mapping(address => Player) players;
+	mapping(address => Player) public players;
 	//Arrays
 
 	Tournament[] public tournaments;
@@ -54,9 +65,9 @@ contract main
 	}
 
 	//Create a new tournament , making sure that the tournament doest already exist
-	function createTounament
+	function createTournament
 	(
-		string memory _tournamentName,uint256 _price,uint256 _startTime, 
+		string memory _tournamentName,uint256 _price,uint256 _startTime, uint256 _endTime,
 		address[] memory _regPlayers, uint8 _regFee,
 		uint8 _maxPlayers
 	) 
@@ -64,7 +75,7 @@ contract main
 	{
 		_price = msg.value;
 
-		tournaments.push(Tournament(_tournamentName,_price,_startTime,_regPlayers,
+		tournaments.push(Tournament(_tournamentName,_price,_startTime,_endTime,_regPlayers,
 		_regFee,block.timestamp,_maxPlayers,address(0)));
 	}
 
@@ -72,7 +83,7 @@ contract main
 	function createPlayer(string memory _userName) public 
 	{
 		address _playerAddress = msg.sender;
-    		require(bytes(players[_playerAddress].userName).length == 0, "Player already exists with this address");
+		require(bytes(players[_playerAddress].userName).length == 0, "Player already exists with this address");
   		for (uint8 i = 0; i < activeUserNames.length; i++) 
 		{
 			string memory existingName = activeUserNames[i];
@@ -82,12 +93,12 @@ contract main
 				}
 		}
 		require(bytes(_userName).length > 0,"Please enter a valid username");
-		Player memory newPlayer = Player(_userName);
+		Player memory newPlayer = Player(_userName,0);
 		players[_playerAddress] = newPlayer;
 		activeUserNames.push(_userName);
 	}
 
-	//Check if the player doesnt already exist
+	//Register for a tournament
 	function registerForTournament(uint _index) public payable validPlayer
 	{
 		
@@ -104,11 +115,10 @@ contract main
 		tournaments[_index].regPlayers.push(msg.sender);
 
 	}
-
-	function checkResult(string memory  _name) public returns(bool)
+	
+	//Check if sender won the tournament
+	function checkResult(string memory  _name) public view returns(bool _result)
 	{
-
-		Tournament memory toCheck;
 		for(uint i = 0; i < tournaments.length; i++)
 		{
 			if (keccak256(abi.encodePacked(tournaments[i].name)) == keccak256(abi.encodePacked(_name)))	
@@ -121,25 +131,28 @@ contract main
 						{
 							return(false);
 						}
-
-
-				}
-		}
-	
-	}
-
-	function setTournamentWinner(string memory _tournament, address _winner) public onlyOwner
-	{
-		for(uint i ; i < tournaments.length; i++)
-		{
-			if (keccak256(abi.encodePacked(tournaments[i].name)) == keccak256(abi.encodePacked(_tournament)))	
-				{
-					tournaments[i].winner == _winner;
 				}
 		}
 	}
 
-
+	//Set the tournament winner (API in final version)
+	function setTournamentWinner(string memory _tournament, address _winner) public  onlyOwner  {
+	    bool tournamentExists = false;
+	    for (uint i = 0; i < tournaments.length; i++) 
+	    {
+		if (keccak256(abi.encodePacked(tournaments[i].name)) == keccak256(abi.encodePacked(_tournament))) {
+			require(tournaments[i].endTime < block.timestamp,"This tournament in not over");
+			tournaments[i].winner = _winner;
+			transfer(_winner,tournaments[i].price);
+			players[_winner].balance += tournaments[i].price;//ERC20 implementation for final verison
+			tournamentExists = true;
+			break; 
+		}
+	    }
+	    if (!tournamentExists) {
+		revert("Non-valid tournament");
+	    }
+	}
 
 
 }

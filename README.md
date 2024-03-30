@@ -20,11 +20,10 @@ Main functions
 
   Feek free to use this code freely , add modification and make requests to make it better ! :alien: :fire: :thumbsup:
 
-<img src = "https://github.com/AurelSid/Arena/assets/48348299/c79580e9-8377-40e5-9062-68a17083dbbe">
+<img src = "https://github.com/AurelSid/Arena/assets/48348299/e58e3c7a-a66f-485f-89df-e37966936ed0">
 
 npx hardhat help\
 npx hardhat test\
 npx hardhat node
-
 
 

@@ -24,6 +24,11 @@ describe("Token contract", function ()
 	});
 
 	it("Should create a new tournament", async function(){
+		const tournamentsBefore = await Arena.tournaments.length;
+		await expect(Arena.createTournament("name", 10, 10, 10, [], 10, 5)).to.not.be.reverted;
+		await expect(Arena.createTournament("name", 10, 10, 10, [], 10, 5)).to.be.revertedWith("Tournament name already in use");
+		const tournamentsAfter = await Arena.tournaments.length;
+		expect(tournamentsAfter == (tournamentsBefore + 1));
 
 	});
 

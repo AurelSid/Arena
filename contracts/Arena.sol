@@ -72,8 +72,16 @@ contract AR is ERC20
 		uint8 _maxPlayers
 	) 
 		public payable onlyOwner
+		
 	{
-		_price = msg.value;
+
+	for(uint i = 0 ; i < tournaments.length ; i++)
+	{
+		if (keccak256(abi.encodePacked(tournaments[i].name)) == keccak256(abi.encodePacked(_tournamentName)))
+			{
+				revert("Tournament name already in use");
+			}	
+	}
 
 		tournaments.push(Tournament(_tournamentName,_price,_startTime,_endTime,_regPlayers,
 		_regFee,block.timestamp,_maxPlayers,address(0)));

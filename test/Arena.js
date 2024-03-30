@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat")
 describe("Token contract", function () 
 {
 	let owner;
@@ -29,6 +30,23 @@ describe("Token contract", function ()
 		await expect(Arena.createTournament("name", 10, 10, 10, [], 10, 5)).to.be.revertedWith("Tournament name already in use");
 		const tournamentsAfter = await Arena.tournaments.length;
 		expect(tournamentsAfter == (tournamentsBefore + 1));
+	});
+
+	it("Should register the user for the tournament", async function()
+	{ 	
+		await expect (Arena.registerForTournament(0,{value:10})).to.not.be.reverted;
+
+	});
+
+
+	it("Should set the tournaments winner", async function()
+	{
+		await expect(Arena.setTournamentWinner("name", owner)).to.not.be.reverted;
+	});
+
+	it("Should check if the player won and pay", async function()
+	{
+		
 
 	});
 

@@ -12,4 +12,3 @@ npx hardhat node
 
 
 
-![untitled](https://github.com/AurelSid/Arena/assets/48348299/266218e0-9a49-49dc-9d43-3604a3f7d81f)
